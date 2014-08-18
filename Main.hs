@@ -4,22 +4,24 @@ module Main (main) where
 import System.Console.GetOpt
 import System.Environment
 import System.Exit
+
 import Control.Monad
+import Control.Monad.IO.Class
+
 import Data.List
 import Data.Foldable
 -- import Data.Monoid (mconcat)
 -- import qualified Data.Text.Lazy as T
-
-import Web.Scotty
-
-import Network.HTTP.Types
-import Network.Wai.Middleware.RequestLogger
+import Data.Aeson.Types
 
 import qualified Text.Blaze.Html5 as H
 -- import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import Control.Monad.IO.Class
+import Network.HTTP.Types
+import Network.Wai.Middleware.RequestLogger
+
+import Web.Scotty
 
 data Flags = Flags {
   port :: Int
@@ -65,10 +67,10 @@ main = do
   scotty (port args) $ do
     middleware logStdoutDev
 
-    get "/" $ do
+    get "/" $
       html $ renderHtml
-        $ H.html $ do
-          H.body $ do
+        $ H.html $
+          H.body $
             H.p "Simple REST url shortener service example implemented in haskell"
 
     post "/shorten" $ do
@@ -76,16 +78,14 @@ main = do
       status status403
       html "Not implemented yet"
 
+    get "/list" $
+      json emptyArray
+
     get "/:hash" $ do
       status status403
       html "Not implemented yet"
       -- hash <- param "hash"
       --raise $ mconcat ["URL hash #", T.pack $ show $ hash, " not found in database!"]
-
-    get "/list" $ do
-      status status403
-      html "Not implemented yet"
-      -- json []
 
     liftIO $ putStrLn ("Simple REST url shortener service example implemented in haskell. " ++
                        "Run at " ++ (show $ port args))

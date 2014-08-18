@@ -28,7 +28,8 @@ executable scotty-test
                        wai-extra,
                        blaze-html,
                        http-types,
-                       text
+                       text,
+                       aeson
 
 source-repository head
   type:     git
