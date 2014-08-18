@@ -1,4 +1,4 @@
 scotty-test
 ===========
 
-Simple REST KV storage service example implemented in haskell
+Simple REST url shortener service example implemented in haskell

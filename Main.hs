@@ -7,10 +7,18 @@ import System.Exit
 import Control.Monad
 import Data.List
 import Data.Foldable
+-- import Data.Monoid (mconcat)
+-- import qualified Data.Text.Lazy as T
 
 import Web.Scotty
 
--- import Control.Concurrent.MVar
+import Network.HTTP.Types
+import Network.Wai.Middleware.RequestLogger
+
+import qualified Text.Blaze.Html5 as H
+-- import Text.Blaze.Html5.Attributes
+import Text.Blaze.Html.Renderer.Text (renderHtml)
+
 import Control.Monad.IO.Class
 
 data Flags = Flags {
@@ -55,4 +63,29 @@ main :: IO ()
 main = do
   args <- parseArgs
   scotty (port args) $ do
-    liftIO $ putStrLn ("Hello from scotty at " ++ (show $ port args))
+    middleware logStdoutDev
+
+    get "/" $ do
+      html $ renderHtml
+        $ H.html $ do
+          H.body $ do
+            H.p "Simple REST url shortener service example implemented in haskell"
+
+    post "/shorten" $ do
+      -- url <- param "url"
+      status status403
+      html "Not implemented yet"
+
+    get "/:hash" $ do
+      status status403
+      html "Not implemented yet"
+      -- hash <- param "hash"
+      --raise $ mconcat ["URL hash #", T.pack $ show $ hash, " not found in database!"]
+
+    get "/list" $ do
+      status status403
+      html "Not implemented yet"
+      -- json []
+
+    liftIO $ putStrLn ("Simple REST url shortener service example implemented in haskell. " ++
+                       "Run at " ++ (show $ port args))

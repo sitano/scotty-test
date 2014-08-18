@@ -24,7 +24,11 @@ executable scotty-test
   GHC-options:         -Wall -fno-warn-orphans
   build-depends:       base == 4.6.*,
                        transformers,
-                       scotty
+                       scotty,
+                       wai-extra,
+                       blaze-html,
+                       http-types,
+                       text
 
 source-repository head
   type:     git
