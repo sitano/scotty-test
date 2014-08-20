@@ -19,7 +19,7 @@ Extra-source-files:
 
 executable scotty-test
   main-is:             Main.hs
-  -- other-modules:
+  other-modules:       Query
   default-language:    Haskell2010
   GHC-options:         -Wall -fno-warn-orphans
   build-depends:       base == 4.6.*,
@@ -29,7 +29,8 @@ executable scotty-test
                        blaze-html,
                        http-types,
                        text,
-                       aeson
+                       aeson,
+                       HDBC-mysql
 
 source-repository head
   type:     git

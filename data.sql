@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `url`
+       (`id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        `url` VARCHAR(2048) NOT NULL,
+        PRIMARY KEY (`id`))
+        ENGINE INNODB
+        AUTO_INCREMENT 0
+        CHARACTER SET utf8
+        COLLATE utf8_general_ci;
