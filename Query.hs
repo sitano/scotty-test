@@ -1,7 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Query (connect, setup, addUrl, getUrl, listUrl) where
 
-import Control.Monad(unless)
+import Control.Monad(unless,mzero)
+
+import Data.Aeson
+import Data.Functor
+
+import Control.Applicative
 
 import Database.HDBC.MySQL
 import Database.HDBC
@@ -11,6 +16,16 @@ data Url =
          urlPath :: String  -- ^ URL path
         }
     deriving (Eq, Show, Read)
+
+instance FromJSON Url where
+  parseJSON (Object v) = Url <$>
+                         v .: "id" <*>
+                         v .: "url"
+  -- A non-Object value is of the wrong type, so fail.
+  parseJSON _          = mzero
+
+instance ToJSON Url where
+  toJSON (Url uid url) = object ["id" .= uid, "url" .= url]
 
 connect :: MySQLConnectInfo -> IO Connection
 connect = connectMySQL
