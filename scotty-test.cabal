@@ -30,6 +30,7 @@ executable scotty-test
                        http-types,
                        text,
                        aeson,
+                       HDBC,
                        HDBC-mysql
 
 source-repository head

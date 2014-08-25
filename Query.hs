@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Query (connect, setup, addUrl, getUrl, listUrl) where
+module Query (defaultConnectInfo,
+              connect, setup, addUrl, getUrl, listUrl) where
 
 import Control.Monad(unless,mzero)
 
@@ -26,6 +27,9 @@ instance FromJSON Url where
 
 instance ToJSON Url where
   toJSON (Url uid url) = object ["id" .= uid, "url" .= url]
+
+defaultConnectInfo :: MySQLConnectInfo
+defaultConnectInfo = defaultMySQLConnectInfo
 
 connect :: MySQLConnectInfo -> IO Connection
 connect = connectMySQL

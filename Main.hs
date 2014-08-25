@@ -23,6 +23,11 @@ import Network.Wai.Middleware.RequestLogger
 
 import Web.Scotty
 
+import Query
+
+import Database.HDBC
+import Database.HDBC.MySQL
+
 data Flags = Flags {
   port :: Int,
   host :: String,
@@ -58,19 +63,19 @@ options flags =
     "REST API port"
   , Option "" ["host"]
     (ReqArg (\str opts ->
-                return $ opts { host = read str }) "HOST")
+                return $ opts { host = str }) "HOST")
     "MySQL host (127.0.0.1 by default)"
   , Option "u" ["user"]
     (ReqArg (\str opts ->
-                return $ opts { user = read str }) "USER")
+                return $ opts { user = str }) "USER")
     "MySQL username (root by default)"
   , Option "" ["password"]
     (ReqArg (\str opts ->
-                return $ opts { password = read str }) "PASSWORD")
+                return $ opts { password = str }) "PASSWORD")
     "MySQL password (empty by default)"
   , Option "d" ["database"]
     (ReqArg (\str opts ->
-                return $ opts { database = read str }) "DATABASE")
+                return $ opts { database = str }) "DATABASE")
     "MySQL service database (short by default)"
   ]
 
@@ -101,8 +106,18 @@ main = do
       status status403
       html "Not implemented yet"
 
-    get "/list" $
-      json emptyArray
+    get "/list" $ do
+      urls <- liftIO $ do
+        db <- connect defaultConnectInfo {
+          mysqlHost = host args,
+          mysqlUser = user args,
+          mysqlPassword = password args,
+          mysqlDatabase = database args
+          }
+        urls <- listUrl db
+        disconnect db
+        return urls
+      json urls
 
     get "/:hash" $ do
       status status403
