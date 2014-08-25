@@ -92,6 +92,12 @@ parseArgs = do
 main :: IO ()
 main = do
   args <- parseArgs
+  let info = defaultConnectInfo {
+    mysqlHost = host args,
+    mysqlUser = user args,
+    mysqlPassword = password args,
+    mysqlDatabase = database args
+    }
   scotty (port args) $ do
     middleware logStdoutDev
 
@@ -108,12 +114,7 @@ main = do
 
     get "/list" $ do
       urls <- liftIO $ do
-        db <- connect defaultConnectInfo {
-          mysqlHost = host args,
-          mysqlUser = user args,
-          mysqlPassword = password args,
-          mysqlDatabase = database args
-          }
+        db <- connect info
         urls <- listUrl db
         disconnect db
         return urls
@@ -126,4 +127,4 @@ main = do
       --raise $ mconcat ["URL hash #", T.pack $ show $ hash, " not found in database!"]
 
     liftIO $ putStrLn ("Simple REST url shortener service example implemented in haskell. " ++
-                       "Run at " ++ (show $ port args))
+                       "Run at " ++ show (port args))
