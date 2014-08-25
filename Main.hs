@@ -24,12 +24,20 @@ import Network.Wai.Middleware.RequestLogger
 import Web.Scotty
 
 data Flags = Flags {
-  port :: Int
+  port :: Int,
+  host :: String,
+  user :: String,
+  password :: String,
+  database :: String
   } deriving Show
 
 defaults :: Flags
 defaults = Flags {
-  port = 8000
+  port = 8000,
+  host = "127.0.0.1",
+  user = "root",
+  password = "",
+  database = "short"
   }
 
 options :: String -> [OptDescr (Flags -> IO Flags)]
@@ -48,8 +56,23 @@ options flags =
                   exitFailure
                 return $ opts { port = g }) "PORT")
     "REST API port"
+  , Option "" ["host"]
+    (ReqArg (\str opts ->
+                return $ opts { host = read str }) "HOST")
+    "MySQL host (127.0.0.1 by default)"
+  , Option "u" ["user"]
+    (ReqArg (\str opts ->
+                return $ opts { user = read str }) "USER")
+    "MySQL username (root by default)"
+  , Option "" ["password"]
+    (ReqArg (\str opts ->
+                return $ opts { password = read str }) "PASSWORD")
+    "MySQL password (empty by default)"
+  , Option "d" ["database"]
+    (ReqArg (\str opts ->
+                return $ opts { database = read str }) "DATABASE")
+    "MySQL service database (short by default)"
   ]
-
 
 parseArgs :: IO Flags
 parseArgs = do
