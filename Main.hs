@@ -11,7 +11,7 @@ import Control.Monad.IO.Class
 import Data.List
 import Data.Foldable
 -- import Data.Monoid (mconcat)
--- import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy as T
 import Data.Aeson.Types
 
 import qualified Text.Blaze.Html5 as H
@@ -92,12 +92,14 @@ parseArgs = do
 main :: IO ()
 main = do
   args <- parseArgs
+
   let info = defaultConnectInfo {
     mysqlHost = host args,
     mysqlUser = user args,
     mysqlPassword = password args,
     mysqlDatabase = database args
     }
+
   scotty (port args) $ do
     middleware logStdoutDev
 
@@ -107,10 +109,15 @@ main = do
           H.body $
             H.p "Simple REST url shortener service example implemented in haskell"
 
-    post "/shorten" $ do
-      -- url <- param "url"
-      status status403
-      html "Not implemented yet"
+    post "/add" $ do
+      path <- param "url"
+      url <- liftIO $ do
+        db <- connect info
+        url <- addUrl db path
+        commit db
+        disconnect db
+        return url
+      json url
 
     get "/list" $ do
       urls <- liftIO $ do
@@ -120,11 +127,17 @@ main = do
         return urls
       json urls
 
+    -- TODO: any error in io will leak connection
+    -- TODO: use conn poll
+    -- TODO: handle errors carefully, check connectivity early
     get "/:hash" $ do
-      status status403
-      html "Not implemented yet"
-      -- hash <- param "hash"
-      --raise $ mconcat ["URL hash #", T.pack $ show $ hash, " not found in database!"]
+      hash <- param "hash"
+      url <- liftIO $ do
+        db <- connect info
+        url <- getUrl db hash
+        disconnect db
+        return url
+      redirect $ T.pack (urlPath url)
 
     liftIO $ putStrLn ("Simple REST url shortener service example implemented in haskell. " ++
                        "Run at " ++ show (port args))

@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Query (defaultConnectInfo,
+              urlId, urlPath,
               connect, setup, addUrl, getUrl, listUrl) where
 
 import Control.Monad(unless,mzero)
