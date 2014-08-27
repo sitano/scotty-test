@@ -12,13 +12,11 @@ import Data.List
 import Data.Foldable
 -- import Data.Monoid (mconcat)
 import qualified Data.Text.Lazy as T
-import Data.Aeson.Types
 
 import qualified Text.Blaze.Html5 as H
 -- import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 
-import Network.HTTP.Types
 import Network.Wai.Middleware.RequestLogger
 
 import Web.Scotty
@@ -89,11 +87,14 @@ parseArgs = do
     (opts, [], []) -> foldlM (flip id) defaults opts
     (_, _, errs) -> ioError (userError (Data.List.concat errs ++ helpMessage))
 
+-- TODO: any error in io will leak connection
+-- TODO: use conn poll
+-- TODO: handle errors carefully, check connectivity early
 main :: IO ()
 main = do
   args <- parseArgs
 
-  let info = defaultConnectInfo {
+  db <- connect defaultConnectInfo {
     mysqlHost = host args,
     mysqlUser = user args,
     mysqlPassword = password args,
@@ -109,35 +110,11 @@ main = do
           H.body $
             H.p "Simple REST url shortener service example implemented in haskell"
 
-    post "/add" $ do
-      path <- param "url"
-      url <- liftIO $ do
-        db <- connect info
-        url <- addUrl db path
-        commit db
-        disconnect db
-        return url
-      json url
+    post "/add" $ param "url" >>= \p -> liftIO (addUrl db p >>= \u -> commit db >> return u) >>= json
 
-    get "/list" $ do
-      urls <- liftIO $ do
-        db <- connect info
-        urls <- listUrl db
-        disconnect db
-        return urls
-      json urls
+    get "/list" $ liftIO (listUrl db) >>= json
 
-    -- TODO: any error in io will leak connection
-    -- TODO: use conn poll
-    -- TODO: handle errors carefully, check connectivity early
-    get "/:hash" $ do
-      hash <- param "hash"
-      url <- liftIO $ do
-        db <- connect info
-        url <- getUrl db hash
-        disconnect db
-        return url
-      redirect $ T.pack (urlPath url)
+    get "/:hash" $ param "hash" >>= \h -> liftIO (getUrl db h) >>= redirect . T.pack . urlPath
 
     liftIO $ putStrLn ("Simple REST url shortener service example implemented in haskell. " ++
                        "Run at " ++ show (port args))
