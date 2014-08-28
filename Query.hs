@@ -4,12 +4,9 @@ module Query (defaultConnectInfo,
               connect, setup, addUrl, getUrl, listUrl) where
 
 import Control.Monad(unless,mzero)
-
 import Data.Aeson
 import Data.Functor
-
 import Control.Applicative
-
 import Database.HDBC.MySQL
 import Database.HDBC
 
@@ -40,14 +37,13 @@ setup db =
   do sql <- readFile "data.sql"
      tables <- getTables db
      unless ("url" `elem` tables) $
-       do run db sql []
-          return ()
-     commit db
+       do _ <- run db sql []
+          commit db
 
 addUrl :: IConnection conn => conn -> String -> IO Url
 addUrl db url =
   handleSql err $ do
-    run db "INSERT INTO `url` (`url`) VALUES (?)" [ toSql url ]
+    _ <- run db "INSERT INTO `url` (`url`) VALUES (?)" [ toSql url ]
     r <- quickQuery' db "SELECT LAST_INSERT_ID() as `id`" []
     case r of
       [[x]] -> return Url {urlId = fromSql x, urlPath = url}
